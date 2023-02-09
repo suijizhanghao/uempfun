@@ -1,60 +1,50 @@
-FROM centos:7
+FROM centos:centos7.9.2009  AS build_base
 
-ARG TARGETARCH
+ARG NGINX_VERSION
+COPY rootfs /
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN /cib/scripts/nginx/install.sh ${NGINX_VERSION}
+
+RUN /cib/scripts/nginx/postunpack.sh
+
+###################################
+FROM centos:centos7.9.2009 
+
+ARG NGINX_VERSION
 
 LABEL cib.uemp.image.authors="uemp" \
       cib.uemp.image.description="由uemp打包的nginx镜像" \
       cib.uemp.image.title="nginx" \
       cib.uemp.image.version="1.23.3"
 
-ENV HOME="/" \
-    OS_ARCH="${TARGETARCH:-amd64}" \
+ENV HOME="/cib" \
+    OS_ARCH="amd64" \
     OS_FLAVOUR="Kylin-V10-SP2" \
-    OS_NAME="linux"
-
-COPY . /
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-
-
-# Install required system packages and dependencies
-RUN install_packages ca-certificates curl libcrypt1 libgeoip1 libpcre3 libssl1.1 procps zlib1g
-RUN mkdir -p /tmp/cib/pkg/cache/ && cd /tmp/cib/pkg/cache/ && \
-    COMPONENTS=( \
-      "render-template-1.0.5-0-linux-${OS_ARCH}-debian-11" \
-      "nginx-1.23.3-1-linux-${OS_ARCH}-debian-11" \
-      "gosu-1.16.0-1-linux-${OS_ARCH}-debian-11" \
-    ) && \
-    for COMPONENT in "${COMPONENTS[@]}"; do \
-      if [ ! -f "${COMPONENT}.tar.gz" ]; then \
-        curl -SsLf "https://downloads.bitnami.com/files/stacksmith/${COMPONENT}.tar.gz" -O ; \
-        curl -SsLf "https://downloads.bitnami.com/files/stacksmith/${COMPONENT}.tar.gz.sha256" -O ; \
-      fi && \
-      sha256sum -c "${COMPONENT}.tar.gz.sha256" && \
-      tar -zxf "${COMPONENT}.tar.gz" -C /cib --strip-components=2 --no-same-owner --wildcards '*/files' && \
-      rm -rf "${COMPONENT}".tar.gz{,.sha256} ; \
-    done
-RUN apt-get autoremove --purge -y curl && \
-    apt-get update && apt-get upgrade -y && \
-    apt-get clean && rm -rf /var/lib/apt/lists /var/cache/apt/archives
-RUN chmod g+rwX /cib
-RUN ln -sf /dev/stdout /cib/nginx/logs/access.log
-RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
-
-COPY rootfs /
-RUN /cib/scripts/nginx/postunpack.sh
-
-ENV APP_VERSION="1.23.3" \
+    OS_NAME="linux" \
+    APP_VERSION="${NGINX_VERSION}" \
     CIB_APP_NAME="nginx" \
     NGINX_HTTPS_PORT_NUMBER="" \
     NGINX_HTTP_PORT_NUMBER="" \
     PATH="/cib/scripts/bin:/cib/scripts/nginx/bin:/cib/nginx/sbin:$PATH"
 
-EXPOSE 8080 8443
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-WORKDIR /app
-USER 1001
+COPY --from=build_base /cib /
+COPY --from=build_base /home/cib /home
+
+RUN groupadd -g 1004 cib && \
+    useradd -u 1004 -d /home/cib -m -s /bin/bash -g cib cib && \
+    chown -R cib:cib /cib /home/cib && \
+    chmod -R 775 /cib && \
+    chmod 775 /home/cib
+RUN ln -sf /dev/stdout /cib/nginx/logs/access.log
+RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
+
+EXPOSE 8443 9010
+WORKDIR /cib
+USER cib:cib
 ENTRYPOINT [ "/cib/scripts/nginx/entrypoint.sh" ]
 # 所有的run.sh都是在前台执行，由container启动时执行；与之对应的start.sh是登录到shell后，再人工执行的，会再后台执行
 CMD [ "/cib/scripts/nginx/run.sh" ]

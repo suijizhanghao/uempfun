@@ -44,11 +44,12 @@ RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
 
 COPY rootfs /
 RUN /cib/scripts/nginx/postunpack.sh
+
 ENV APP_VERSION="1.23.3" \
     CIB_APP_NAME="nginx" \
     NGINX_HTTPS_PORT_NUMBER="" \
     NGINX_HTTP_PORT_NUMBER="" \
-    PATH="/cib/common/bin:/cib/nginx/sbin:$PATH"
+    PATH="/cib/scripts/bin:/cib/scripts/nginx/bin:/cib/nginx/sbin:$PATH"
 
 EXPOSE 8080 8443
 

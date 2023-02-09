@@ -20,6 +20,7 @@ print_welcome_page
 
 if [[ "$1" = "/cib/scripts/nginx/run.sh" ]]; then
     info "** Starting NGINX setup **"
+    # setup.sh只是做了一层拦截，然后来修改nginx的各种参数；如果直接登录容器，然后直接执行run.sh也是可以启动的，但是拦截的就没有了。
     /cib/scripts/nginx/setup.sh
     info "** NGINX setup finished! **"
 fi

@@ -123,6 +123,7 @@ nginx_validate() {
         error "$1"
         error_code=1
     }
+    # 只允许value为：yes/no/true/false
     check_yes_no_value() {
         if ! is_yes_no_value "${!1}" && ! is_true_false_value "${!1}"; then
             print_validation_error "The allowed values for ${1} are: yes no"
@@ -180,11 +181,11 @@ nginx_initialize() {
     local nginx_user_configuration
     if am_i_root; then
         debug "Ensuring NGINX daemon user/group exists"
-        ensure_user_exists "$NGINX_DAEMON_USER" --group "$NGINX_DAEMON_GROUP"
-        if [[ -n "${NGINX_DAEMON_USER:-}" ]]; then
-            chown -R "${NGINX_DAEMON_USER:-}" "$NGINX_TMP_DIR"
+        ensure_user_exists "$CIB_USER" --group "$CIB_GROUP"
+        if [[ -n "${CIB_USER:-}" ]]; then
+            chown -R "${CIB_USER:-}" "$NGINX_TMP_DIR"
         fi
-        nginx_configure "user" "${NGINX_DAEMON_USER:-} ${NGINX_DAEMON_GROUP:-}"
+        nginx_configure "user" "${CIB_USER:-} ${CIB_GROUP:-}"
     else
         # The "user" directive makes sense only if the master process runs with super-user privileges
         # TODO: find an appropriate NGINX parser to avoid 'sed calls'

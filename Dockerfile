@@ -56,4 +56,5 @@ EXPOSE 8080 8443
 WORKDIR /app
 USER 1001
 ENTRYPOINT [ "/cib/scripts/nginx/entrypoint.sh" ]
+# 所有的run.sh都是在前台执行，由container启动时执行；与之对应的start.sh是登录到shell后，再人工执行的，会再后台执行
 CMD [ "/cib/scripts/nginx/run.sh" ]

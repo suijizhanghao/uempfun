@@ -14,5 +14,5 @@ set -o pipefail
 # Load NGINX environment variables
 . /cib/scripts/nginx-env.sh
 
-info "** Starting NGINX **"
+info "** Starting NGINX by Containers **"
 exec "${NGINX_SBIN_DIR}/nginx" -c "$NGINX_CONF_FILE" -g "daemon off;"

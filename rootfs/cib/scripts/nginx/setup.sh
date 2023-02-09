@@ -19,10 +19,10 @@ set -o pipefail
 nginx_validate
 
 # Ensure NGINX is stopped when this script ends
-trap "nginx_stop" EXIT
+trap "nginx_stop" EXIT  # 收到EXIT信号量后，需要执行的命令，即执行：nginx_stop
 
 # Ensure NGINX daemon user exists when running as 'root'
-am_i_root && ensure_user_exists "$NGINX_DAEMON_USER" --group "$NGINX_DAEMON_GROUP"
+am_i_root && ensure_user_exists "$CIB_USER" --group "$CIB_GROUP"
 
 # Run init scripts
 nginx_custom_init_scripts

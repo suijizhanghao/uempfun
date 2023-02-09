@@ -56,10 +56,10 @@ export NGINX_PID_FILE="${NGINX_TMP_DIR}/nginx.pid"
 export PATH="${NGINX_SBIN_DIR}:${CIB_ROOT_DIR}/common/bin:${PATH}"
 
 # System users (when running with a privileged user)
-export NGINX_DAEMON_USER="daemon"
-export WEB_SERVER_DAEMON_USER="$NGINX_DAEMON_USER"
-export NGINX_DAEMON_GROUP="daemon"
-export WEB_SERVER_DAEMON_GROUP="$NGINX_DAEMON_GROUP"
+export CIB_USER="cib"
+export WEB_SERVER_DAEMON_USER="$CIB_USER"
+export CIB_GROUP="cib"
+export WEB_SERVER_DAEMON_GROUP="$CIB_GROUP"
 export NGINX_DEFAULT_HTTP_PORT_NUMBER="8080"
 export WEB_SERVER_DEFAULT_HTTP_PORT_NUMBER="$NGINX_DEFAULT_HTTP_PORT_NUMBER" # only used at build time
 export NGINX_DEFAULT_HTTPS_PORT_NUMBER="8443"

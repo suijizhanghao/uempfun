@@ -29,6 +29,7 @@ get_pid_from_file() {
 
 ########################
 # Check if a provided PID corresponds to a running service
+# 疑虑：容器中，似乎以pid作为判定进程是否是可行的；但是虚拟机环境下，最好不要这么做
 # Arguments:
 #   $1 - PID
 # Returns:

@@ -17,7 +17,7 @@
 ########################
 # Check if NGINX is running
 # Globals:
-#   NGINX_TMP_DIR
+#   NGINX_PID_FILE
 # Arguments:
 #   None
 # Returns:
@@ -36,7 +36,7 @@ is_nginx_running() {
 ########################
 # Check if NGINX is not running
 # Globals:
-#   NGINX_TMP_DIR
+#   NGINX_PID_FILE
 # Arguments:
 #   None
 # Returns:
@@ -49,7 +49,7 @@ is_nginx_not_running() {
 ########################
 # Stop NGINX
 # Globals:
-#   NGINX_TMP_DIR
+#   NGINX_PID_FILE
 # Arguments:
 #   None
 # Returns:
@@ -165,7 +165,7 @@ nginx_initialize() {
 
     # This fixes an issue where the trap would kill the entrypoint.sh, if a PID was left over from a previous run
     # Exec replaces the process without creating a new one, and when the container is restarted it may have the same PID
-    rm -f "${NGINX_TMP_DIR}/nginx.pid"
+    rm -f "${NGINX_PID_FILE}"
 
     # Persisted configuration files from old versions
     if [[ -f "$NGINX_VOLUME_DIR/conf/nginx.conf" ]]; then

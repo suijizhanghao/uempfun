@@ -23,17 +23,17 @@ set -o pipefail
 # Returns:
 #   None
 #########################
-nginx_patch_httpoxy_vulnerability() {
-    debug "Unsetting HTTP_PROXY header..."
-    echo '# Unset the HTTP_PROXY header' >>"${NGINX_CONF_DIR}/fastcgi_params"
-    echo 'fastcgi_param  HTTP_PROXY         "";' >>"${NGINX_CONF_DIR}/fastcgi_params"
-}
+#nginx_patch_httpoxy_vulnerability() {
+#    debug "Unsetting HTTP_PROXY header..."
+#    echo '# Unset the HTTP_PROXY header' >>"${NGINX_CONF_DIR}/fastcgi_params"
+#    echo 'fastcgi_param  HTTP_PROXY         "";' >>"${NGINX_CONF_DIR}/fastcgi_params"
+#}
 
 # Load NGINX environment variables
 . /cib/scripts/nginx-env.sh
 
 # Remove unnecessary directories that come with the tarball
-rm -rf "${CIB_ROOT_DIR}/certs" "${CIB_ROOT_DIR}/server_blocks"
+# rm -rf "${CIB_ROOT_DIR}/certs" "${CIB_ROOT_DIR}/server_blocks"
 
 # Ensure non-root user has write permissions on a set of directories
 for dir in "$NGINX_VOLUME_DIR" "$NGINX_CONF_DIR" "$NGINX_INITSCRIPTS_DIR" "$NGINX_SERVER_BLOCKS_DIR" "${NGINX_CONF_DIR}/cib" "$NGINX_LOGS_DIR" "$NGINX_TMP_DIR"; do
@@ -42,7 +42,7 @@ for dir in "$NGINX_VOLUME_DIR" "$NGINX_CONF_DIR" "$NGINX_INITSCRIPTS_DIR" "$NGIN
 done
 
 # Unset HTTP_PROXY header to protect vs HTTPPOXY vulnerability
-nginx_patch_httpoxy_vulnerability
+# nginx_patch_httpoxy_vulnerability
 
 # Configure default HTTP port
 nginx_configure_port "$NGINX_DEFAULT_HTTP_PORT_NUMBER"
@@ -55,12 +55,12 @@ nginx_configure_port "$NGINX_DEFAULT_HTTPS_PORT_NUMBER" "${CIB_ROOT_DIR}/scripts
 . /cib/scripts/libfs.sh
 
 # Users can mount their html sites at /app
-mv "${NGINX_BASE_DIR}/html" /app
-ln -sf /app "${NGINX_BASE_DIR}/html"
+# mv "${NGINX_BASE_DIR}/html" /app
+# ln -sf /app "${NGINX_BASE_DIR}/html"
 
 # Users can mount their certificates at /certs
-mv "${NGINX_CONF_DIR}/cib/certs" /certs
-ln -sf /certs "${NGINX_CONF_DIR}/cib/certs"
+# mv "${NGINX_CONF_DIR}/cib/certs" /certs
+# ln -sf /certs "${NGINX_CONF_DIR}/cib/certs"
 
 ln -sf "/dev/stdout" "${NGINX_LOGS_DIR}/access.log"
 ln -sf "/dev/stderr" "${NGINX_LOGS_DIR}/error.log"

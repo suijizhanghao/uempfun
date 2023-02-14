@@ -9,3 +9,4 @@
 - run.sh 和 start.sh 都可以执行，只是以不同的方式来启动nginx服务
 - postunpak.sh 只在Dockerfile中使用，在应用安装后执行一些权限管理、目录建立、文件清理等工作，应当可重复执行，且几乎可以在任意步骤中执行
 - install.sh 是 编译ngixn的步骤，应当支持各种操作
+- setup.sh 是启动前的一层拦截

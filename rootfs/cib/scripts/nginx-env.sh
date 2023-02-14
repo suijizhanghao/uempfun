@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# 切记：需与nginx.conf中配置的值保持一致
+
 # Environment configuration for nginx
 
 # The values for all environment variables will be set in the below order of precedence
@@ -13,7 +15,7 @@
 . /cib/scripts/liblog.sh
 
 export CIB_ROOT_DIR="/cib"
-export CIB_VOLUME_DIR="/bitnami"
+export CIB_VOLUME_DIR="/cib_volume"
 
 # Logging configuration
 export MODULE="${MODULE:-nginx}"
@@ -44,16 +46,16 @@ export WEB_SERVER_TYPE="nginx"
 # Paths
 export NGINX_BASE_DIR="${CIB_ROOT_DIR}/nginx"
 export NGINX_VOLUME_DIR="${CIB_VOLUME_DIR}/nginx"
-export NGINX_SBIN_DIR="${NGINX_BASE_DIR}/sbin"
-export NGINX_CONF_DIR="${NGINX_BASE_DIR}/conf"
-export NGINX_HTDOCS_DIR="${NGINX_BASE_DIR}/html"
-export NGINX_TMP_DIR="${NGINX_BASE_DIR}/tmp"
+export NGINX_SBIN_DIR="${NGINX_BASE_DIR}/sbin"          # 与默认路径相同
+export NGINX_CONF_DIR="${NGINX_BASE_DIR}/conf"          # 与默认路径相同
+export NGINX_HTDOCS_DIR="${NGINX_BASE_DIR}/html"        # 与默认路径相同
+export NGINX_TMP_DIR="${NGINX_BASE_DIR}/tmp"            # 需与nginx.conf中的5个temp_path保持一致
 export NGINX_LOGS_DIR="${NGINX_BASE_DIR}/logs"
 export NGINX_SERVER_BLOCKS_DIR="${NGINX_CONF_DIR}/server_blocks"
 export NGINX_INITSCRIPTS_DIR="/docker-entrypoint-initdb.d"
-export NGINX_CONF_FILE="${NGINX_CONF_DIR}/nginx.conf"
-export NGINX_PID_FILE="${NGINX_TMP_DIR}/nginx.pid"
-export PATH="${NGINX_SBIN_DIR}:${CIB_ROOT_DIR}/common/bin:${PATH}"
+export NGINX_CONF_FILE="${NGINX_CONF_DIR}/nginx.conf"   
+export NGINX_PID_FILE="${NGINX_TMP_DIR}/nginx.pid"      # 需与nginx.conf中的pid配置参数相同
+export PATH="${NGINX_SBIN_DIR}:${PATH}"
 
 # System users (when running with a privileged user)
 export CIB_USER="cib"

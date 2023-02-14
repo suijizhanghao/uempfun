@@ -1,11 +1,17 @@
 FROM centos:centos7.9.2009  AS build_base
 
+# 测试命令
+# docker rm -f t1; docker image rm cib-nginx:v0.1 ;
+# docker build --build-arg NGINX_VERSION=1.23.3 -t cib-nginx:v0.1  .;docker images
+# docker run -itd --name t1 cib-nginx:v0.1
+# docker exec -it t1 /bin/bash
+
 ARG NGINX_VERSION
 COPY rootfs /
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN /cib/scripts/nginx/install.sh ${NGINX_VERSION}
+RUN  chmod -R 775 /cib && /cib/scripts/nginx/install.sh ${NGINX_VERSION}
 
 RUN /cib/scripts/nginx/postunpack.sh
 
@@ -19,7 +25,7 @@ LABEL cib.uemp.image.authors="uemp" \
       cib.uemp.image.title="nginx" \
       cib.uemp.image.version="1.23.3"
 
-ENV HOME="/cib" \
+ENV HOME="/home/cib" \
     OS_ARCH="amd64" \
     OS_FLAVOUR="Kylin-V10-SP2" \
     OS_NAME="linux" \
@@ -27,13 +33,14 @@ ENV HOME="/cib" \
     CIB_APP_NAME="nginx" \
     NGINX_HTTPS_PORT_NUMBER="" \
     NGINX_HTTP_PORT_NUMBER="" \
-    PATH="/cib/scripts/bin:/cib/scripts/nginx/bin:/cib/nginx/sbin:$PATH"
+    PATH="/cib/common/bin:/cib/scripts/bin:/cib/scripts/nginx/bin:/cib/nginx/sbin:$PATH"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY --from=build_base /cib /
-COPY --from=build_base /home/cib /home
+WORKDIR /cib
+COPY --from=build_base /cib .
 
+RUN ls -l /
 RUN groupadd -g 1004 cib && \
     useradd -u 1004 -d /home/cib -m -s /bin/bash -g cib cib && \
     chown -R cib:cib /cib /home/cib && \
@@ -43,7 +50,7 @@ RUN ln -sf /dev/stdout /cib/nginx/logs/access.log
 RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
 
 EXPOSE 8443 9010
-WORKDIR /cib
+
 USER cib:cib
 ENTRYPOINT [ "/cib/scripts/nginx/entrypoint.sh" ]
 # 所有的run.sh都是在前台执行，由container启动时执行；与之对应的start.sh是登录到shell后，再人工执行的，会再后台执行

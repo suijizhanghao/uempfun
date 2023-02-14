@@ -36,18 +36,18 @@ set -o pipefail
 # rm -rf "${CIB_ROOT_DIR}/certs" "${CIB_ROOT_DIR}/server_blocks"
 
 # Ensure non-root user has write permissions on a set of directories
-for dir in "$NGINX_VOLUME_DIR" "$NGINX_CONF_DIR" "$NGINX_INITSCRIPTS_DIR" "$NGINX_SERVER_BLOCKS_DIR" "${NGINX_CONF_DIR}/cib" "$NGINX_LOGS_DIR" "$NGINX_TMP_DIR"; do
-    ensure_dir_exists "$dir"
-    chmod -R g+rwX "$dir"
-done
+# for dir in "$NGINX_CONF_DIR" "$NGINX_INITSCRIPTS_DIR" "$NGINX_SERVER_BLOCKS_DIR" "${NGINX_CONF_DIR}/cib" "$NGINX_LOGS_DIR" "$NGINX_TMP_DIR"; do
+#    ensure_dir_exists "$dir"
+#    chmod -R g+rwX "$dir"
+# done
 
 # Unset HTTP_PROXY header to protect vs HTTPPOXY vulnerability
 # nginx_patch_httpoxy_vulnerability
 
 # Configure default HTTP port
-nginx_configure_port "$NGINX_DEFAULT_HTTP_PORT_NUMBER"
+# nginx_configure_port "$NGINX_DEFAULT_HTTP_PORT_NUMBER"
 # Configure default HTTPS port
-nginx_configure_port "$NGINX_DEFAULT_HTTPS_PORT_NUMBER" "${CIB_ROOT_DIR}/scripts/nginx/server_blocks/default-https-server-block.conf"
+# nginx_configure_port "$NGINX_DEFAULT_HTTPS_PORT_NUMBER" "${CIB_ROOT_DIR}/scripts/nginx/server_blocks/default-https-server-block.conf"
 
 # shellcheck disable=SC1091
 
@@ -59,8 +59,9 @@ nginx_configure_port "$NGINX_DEFAULT_HTTPS_PORT_NUMBER" "${CIB_ROOT_DIR}/scripts
 # ln -sf /app "${NGINX_BASE_DIR}/html"
 
 # Users can mount their certificates at /certs
+# 不在处理cert的问题，k8s下无需这么考虑问题了
 # mv "${NGINX_CONF_DIR}/cib/certs" /certs
 # ln -sf /certs "${NGINX_CONF_DIR}/cib/certs"
 
-ln -sf "/dev/stdout" "${NGINX_LOGS_DIR}/access.log"
-ln -sf "/dev/stderr" "${NGINX_LOGS_DIR}/error.log"
+# ln -sf "/dev/stdout" "${NGINX_LOGS_DIR}/access.log"
+# ln -sf "/dev/stderr" "${NGINX_LOGS_DIR}/error.log"

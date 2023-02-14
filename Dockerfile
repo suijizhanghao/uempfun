@@ -13,7 +13,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN  chmod -R 775 /cib && /cib/scripts/nginx/install.sh ${NGINX_VERSION}
 
-RUN /cib/scripts/nginx/postunpack.sh
+# RUN /cib/scripts/nginx/postunpack.sh  # postunpack.sh的内容已经都删除完毕了，暂时不需要这个了
 
 ###################################
 FROM centos:centos7.9.2009 
@@ -31,8 +31,6 @@ ENV HOME="/home/cib" \
     OS_NAME="linux" \
     APP_VERSION="${NGINX_VERSION}" \
     CIB_APP_NAME="nginx" \
-    NGINX_HTTPS_PORT_NUMBER="" \
-    NGINX_HTTP_PORT_NUMBER="" \
     PATH="/cib/common/bin:/cib/scripts/bin:/cib/scripts/nginx/bin:/cib/nginx/sbin:$PATH"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -46,8 +44,8 @@ RUN groupadd -g 1004 cib && \
     chown -R cib:cib /cib /home/cib && \
     chmod -R 775 /cib && \
     chmod 775 /home/cib
-RUN ln -sf /dev/stdout /cib/nginx/logs/access.log
-RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
+# RUN ln -sf /dev/stdout /cib/nginx/logs/access.log
+# RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
 
 EXPOSE 8443 9010
 

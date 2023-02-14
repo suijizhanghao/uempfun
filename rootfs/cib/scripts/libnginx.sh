@@ -139,11 +139,11 @@ nginx_validate() {
         fi
     }
 
-    ! is_empty_value "$NGINX_ENABLE_ABSOLUTE_REDIRECT" && check_yes_no_value "NGINX_ENABLE_ABSOLUTE_REDIRECT"
-    ! is_empty_value "$NGINX_ENABLE_PORT_IN_REDIRECT" && check_yes_no_value "NGINX_ENABLE_PORT_IN_REDIRECT"
+    # ! is_empty_value "$NGINX_ENABLE_ABSOLUTE_REDIRECT" && check_yes_no_value "NGINX_ENABLE_ABSOLUTE_REDIRECT"
+    # ! is_empty_value "$NGINX_ENABLE_PORT_IN_REDIRECT" && check_yes_no_value "NGINX_ENABLE_PORT_IN_REDIRECT"
 
-    ! is_empty_value "$NGINX_HTTP_PORT_NUMBER" && check_valid_port "NGINX_HTTP_PORT_NUMBER"
-    ! is_empty_value "$NGINX_HTTPS_PORT_NUMBER" && check_valid_port "NGINX_HTTPS_PORT_NUMBER"
+    # ! is_empty_value "$NGINX_HTTP_PORT_NUMBER" && check_valid_port "NGINX_HTTP_PORT_NUMBER"
+    # ! is_empty_value "$NGINX_HTTPS_PORT_NUMBER" && check_valid_port "NGINX_HTTPS_PORT_NUMBER"
 
     if ! is_file_writable "$NGINX_CONF_FILE"; then
         warn "The NGINX configuration file '${NGINX_CONF_FILE}' is not writable by current user. Configurations based on environment variables will not be applied."
@@ -168,14 +168,14 @@ nginx_initialize() {
     rm -f "${NGINX_PID_FILE}"
 
     # Persisted configuration files from old versions
-    if [[ -f "$NGINX_VOLUME_DIR/conf/nginx.conf" ]]; then
-        error "A 'nginx.conf' file was found inside '${NGINX_VOLUME_DIR}/conf'. This configuration is not supported anymore. Please mount the configuration file at '${NGINX_CONF_FILE}' instead."
-        exit 1
-    fi
-    if ! is_dir_empty "$NGINX_VOLUME_DIR/conf/vhosts"; then
-        error "Custom server blocks files were found inside '$NGINX_VOLUME_DIR/conf/vhosts'. This configuration is not supported anymore. Please mount your custom server blocks config files at '${NGINX_SERVER_BLOCKS_DIR}' instead."
-        exit 1
-    fi
+    # if [[ -f "$NGINX_VOLUME_DIR/conf/nginx.conf" ]]; then
+    #    error "A 'nginx.conf' file was found inside '${NGINX_VOLUME_DIR}/conf'. This configuration is not supported anymore. Please mount the configuration file at '${NGINX_CONF_FILE}' instead."
+    #    exit 1
+    # fi
+    # if ! is_dir_empty "$NGINX_VOLUME_DIR/conf/vhosts"; then
+    #    error "Custom server blocks files were found inside '$NGINX_VOLUME_DIR/conf/vhosts'. This configuration is not supported anymore. Please mount your custom server blocks config files at '${NGINX_SERVER_BLOCKS_DIR}' instead."
+    #    exit 1
+    #fi
 
     debug "Updating NGINX configuration based on environment variables"
     local nginx_user_configuration
@@ -185,23 +185,23 @@ nginx_initialize() {
         if [[ -n "${CIB_USER:-}" ]]; then
             chown -R "${CIB_USER:-}" "$NGINX_TMP_DIR"
         fi
-        nginx_configure "user" "${CIB_USER:-} ${CIB_GROUP:-}"
-    else
+        # nginx_configure "user" "${CIB_USER:-} ${CIB_GROUP:-}"
+    # else # 不是root的情况下，把sed修改删除了
         # The "user" directive makes sense only if the master process runs with super-user privileges
         # TODO: find an appropriate NGINX parser to avoid 'sed calls'
-        nginx_user_configuration="$(sed -E "s/(^user)/# \1/g" "$NGINX_CONF_FILE")"
-        is_file_writable "$NGINX_CONF_FILE" && echo "$nginx_user_configuration" >"$NGINX_CONF_FILE"
+        # nginx_user_configuration="$(sed -E "s/(^user)/# \1/g" "$NGINX_CONF_FILE")"
+        # is_file_writable "$NGINX_CONF_FILE" && echo "$nginx_user_configuration" >"$NGINX_CONF_FILE"
     fi
     # Configure HTTP port number
-    if [[ -n "${NGINX_HTTP_PORT_NUMBER:-}" ]]; then
-        nginx_configure_port "$NGINX_HTTP_PORT_NUMBER"
-    fi
+    # if [[ -n "${NGINX_HTTP_PORT_NUMBER:-}" ]]; then
+    #    nginx_configure_port "$NGINX_HTTP_PORT_NUMBER"
+    # fi
     # Configure HTTPS port number
-    if [[ -n "${NGINX_HTTPS_PORT_NUMBER:-}" ]]; then
-        nginx_configure_port "$NGINX_HTTPS_PORT_NUMBER" "${NGINX_SERVER_BLOCKS_DIR}/default-https-server-block.conf"
-    fi
-    nginx_configure "absolute_redirect" "$(is_boolean_yes "$NGINX_ENABLE_ABSOLUTE_REDIRECT" && echo "on" || echo "off" )"
-    nginx_configure "port_in_redirect" "$(is_boolean_yes "$NGINX_ENABLE_PORT_IN_REDIRECT" && echo "on" || echo "off" )"
+    # if [[ -n "${NGINX_HTTPS_PORT_NUMBER:-}" ]]; then
+    #     nginx_configure_port "$NGINX_HTTPS_PORT_NUMBER" "${NGINX_SERVER_BLOCKS_DIR}/default-https-server-block.conf"
+    # fi
+    # nginx_configure "absolute_redirect" "$(is_boolean_yes "$NGINX_ENABLE_ABSOLUTE_REDIRECT" && echo "on" || echo "off" )"
+    # nginx_configure "port_in_redirect" "$(is_boolean_yes "$NGINX_ENABLE_PORT_IN_REDIRECT" && echo "on" || echo "off" )"
 }
 
 ########################
@@ -289,13 +289,13 @@ ensure_nginx_app_configuration_exists() {
     if [[ "${#hosts[@]}" -gt 0 ]]; then
         for host in "${hosts[@]}"; do
             http_listen=$'\n'"listen ${host}:${http_port};"
-            https_listen=$'\n'"listen ${host}:${https_port} ssl;"
+            # https_listen=$'\n'"listen ${host}:${https_port} ssl;"
             [[ -z "${http_listen_configuration:-}" ]] && http_listen_configuration="$http_listen" || http_listen_configuration="${http_listen_configuration}${http_listen}"
-            [[ -z "${https_listen_configuration:-}" ]] && https_listen_configuration="$https_listen" || https_listen_configuration="${https_listen_configuration}${https_listen}"
+            # [[ -z "${https_listen_configuration:-}" ]] && https_listen_configuration="$https_listen" || https_listen_configuration="${https_listen_configuration}${https_listen}"
         done
     else
         http_listen_configuration=$'\n'"listen ${http_port} default_server;"
-        https_listen_configuration=$'\n'"listen ${https_port} ssl default_server;"
+        # https_listen_configuration=$'\n'"listen ${https_port} ssl default_server;"
     fi
     # Construct server_name block
     export server_name_configuration=""
@@ -533,9 +533,9 @@ nginx_update_app_configuration() {
     if [[ "${#hosts[@]}" -gt 0 ]]; then
         for host in "${hosts[@]}"; do
             http_listen="listen ${host}:${http_port};"
-            https_listen="listen ${host}:${https_port} ssl;"
+            # https_listen="listen ${host}:${https_port} ssl;"
             [[ -z "${http_listen_configuration:-}" ]] && http_listen_configuration="$http_listen" || http_listen_configuration="${http_listen_configuration}"$'\\\n'"${http_listen}"
-            [[ -z "${https_listen_configuration:-}" ]] && https_listen_configuration="$https_listen" || https_listen_configuration="${https_listen_configuration}"$'\\\n'"${https_listen}"
+            # [[ -z "${https_listen_configuration:-}" ]] && https_listen_configuration="$https_listen" || https_listen_configuration="${https_listen_configuration}"$'\\\n'"${https_listen}"
         done
     else
         http_listen_configuration="listen ${http_port} default_server;"

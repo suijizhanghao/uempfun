@@ -47,7 +47,7 @@ for env_var in "${nginx_env_vars[@]}"; do
     if [[ -n "${!file_env_var:-}" ]]; then
         if [[ -r "${!file_env_var:-}" ]]; then
             export "${env_var}=$(< "${!file_env_var}")"
-            file_env_var_profile_file="${!file_env_var}_${UEMP_PROFILE}"
+            file_env_var_profile_file="${!file_env_var}.${UEMP_PROFILE}"
             if [[ -r "${file_env_var_profile_file}" ]]; then
                 export "${env_var}=$(< "${file_env_var_profile_file}")"
             fi

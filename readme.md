@@ -12,7 +12,7 @@
 - postunpack.sh 只在Dockerfile中使用，在应用安装后执行一些权限管理、目录建立、文件清理等工作，应当可重复执行，且几乎可以在任意步骤中执行；由于nginx是编译的，所以改用了install.sh，所以postunpack.sh中的所有功能都不需要执行了，这个文件暂时保留，只是确实没什么作用了
 - install.sh 是 编译nginx的步骤
 - setup.sh 是启动前的一层拦截，目前的策略是：run.sh 和 start.sh都要调用下setup.sh，确保两种启动方式效果一致
-- nginx_env_vars 中的参数，可先读取 vars_FILE环境变量标记的文件的值，再读取vars_FILE_${UEMP_PROFILE}环境变量标记的文件的值(感觉用2个__作为分割可能会好一些，但是算了)
+- nginx_env_vars 中的参数，可先读取 vars_FILE环境变量标记的文件的值，再读取文件"${vars_File}.uat"的值
 - 通过编排文件传到pod中的环境变量可以是：UEMP_NAMESPACE、 UEMP_PROFILE、 nginx_env_vars数组中的各个参数的文件路径变量，当然了其他的export的内容也都可以传入
 
 ### 参数问题 ###

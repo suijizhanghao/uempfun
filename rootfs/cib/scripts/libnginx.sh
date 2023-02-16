@@ -115,9 +115,11 @@ nginx_configure() {
 # Returns:
 #   None
 #########################
+# shellcheck disable=SC2317
 nginx_validate() {
     info "Validating settings in NGINX_* env vars"
     local error_code=0
+    
     # Auxiliary functions
     print_validation_error() {
         error "$1"
@@ -160,8 +162,9 @@ nginx_validate() {
 # Returns:
 #   None
 #########################
+# shellcheck disable=SC2034
 nginx_initialize() {
-    info "Initializing NGINX"
+    # info "Initializing NGINX"
 
     # This fixes an issue where the trap would kill the entrypoint.sh, if a PID was left over from a previous run
     # Exec replaces the process without creating a new one, and when the container is restarted it may have the same PID
@@ -179,19 +182,19 @@ nginx_initialize() {
 
     debug "Updating NGINX configuration based on environment variables"
     local nginx_user_configuration
-    if am_i_root; then
-        debug "Ensuring NGINX daemon user/group exists"
-        ensure_user_exists "$CIB_USER" --group "$CIB_GROUP"
-        if [[ -n "${CIB_USER:-}" ]]; then
-            chown -R "${CIB_USER:-}" "$NGINX_TMP_DIR"
-        fi
+    # if am_i_root; then
+    #    debug "Ensuring NGINX daemon user/group exists"
+    #    ensure_user_exists "$CIB_USER" --group "$CIB_GROUP"
+    #    if [[ -n "${CIB_USER:-}" ]]; then
+    #        chown -R "${CIB_USER:-}" "$NGINX_TMP_DIR"
+    #    fi
         # nginx_configure "user" "${CIB_USER:-} ${CIB_GROUP:-}"
     # else # 不是root的情况下，把sed修改删除了
         # The "user" directive makes sense only if the master process runs with super-user privileges
         # TODO: find an appropriate NGINX parser to avoid 'sed calls'
         # nginx_user_configuration="$(sed -E "s/(^user)/# \1/g" "$NGINX_CONF_FILE")"
         # is_file_writable "$NGINX_CONF_FILE" && echo "$nginx_user_configuration" >"$NGINX_CONF_FILE"
-    fi
+    #fi
     # Configure HTTP port number
     # if [[ -n "${NGINX_HTTP_PORT_NUMBER:-}" ]]; then
     #    nginx_configure_port "$NGINX_HTTP_PORT_NUMBER"

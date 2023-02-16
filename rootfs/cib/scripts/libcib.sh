@@ -30,6 +30,7 @@ print_welcome_page() {
     fi
 }
 
+
 ########################
 # Print the welcome page for a Cib Docker image，此处统一打印各种基础信息
 # Globals:
@@ -41,9 +42,15 @@ print_welcome_page() {
 #   None
 #########################
 print_image_welcome_page() {
+    print_vars() {
+        local var
+        for var in "$@" ;do
+            echo -n "${var}=${!var} "
+        done
+    }
     log ""
     log "${BOLD}Welcome to the Cib ${CIB_APP_NAME} container${RESET}"
-    log "当前运行的版本为：${APP_VERSION}"
+    log "关键变量打印：$(print_vars UEMP_NAMESPACE UEMP_PROFILE)"
     log ""
 }
 

@@ -18,12 +18,13 @@ set -o pipefail     # 管道命令返回值为最后一个命令的值；当前�
 
 print_welcome_page
 
-if [[ "$1" = "/cib/scripts/nginx/run.sh" ]]; then
-    info "** Starting NGINX setup **"
-    # setup.sh只是做了一层拦截，然后来修改nginx的各种参数；如果直接登录容器，然后直接执行run.sh/start.sh也是可以启动的，但是拦截的就没有了。
-    /cib/scripts/nginx/setup.sh
-    info "** NGINX setup finished! **"
-fi
+#if [[ "$1" = "/cib/scripts/nginx/run.sh" ]]; then
+    #info "** Starting NGINX setup **"
+    # setup.sh只是做了一层拦截，然后来修改nginx的各种参数
+    # setup.sh 将转移至run.sh和start.sh中，以实现两种启动方式的结果一致
+    # /cib/scripts/nginx/setup.sh
+    #info "** NGINX setup finished! **"
+#fi
 
 echo ""
 exec "$@"

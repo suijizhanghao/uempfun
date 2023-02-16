@@ -18,6 +18,8 @@ set -o pipefail
 error_code=0
 
 if is_nginx_not_running; then
+    # 此处增加steup.sh确保run.sh和start.sh的执行效果一致
+    /cib/scripts/nginx/setup.sh
     "${NGINX_SBIN_DIR}/nginx" -c "$NGINX_CONF_FILE"
     if ! retry_while "is_nginx_running"; then
         error "nginx did not start"

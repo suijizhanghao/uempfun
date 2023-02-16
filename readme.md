@@ -3,14 +3,14 @@
 ## 说明 ##
 - rootfs就是根目录
 - NGINX_VOLUME_DIR 不再使用了，k8s环境下可以直接mount文件，该目录存在意义不是很大了
-
+- nginx.conf 、nginx.${UEMP_PROFILE}.conf，应该放在同一级目录，同时请注意命名规则
 ### 脚本功能说明  ###
 - /cib/scripts/nginx/start.sh 登录到服务器后，执行该脚本，可以在后台启动nginx
 - /cib/scripts/nginx/run.sh   该脚本，会在前台启动nginx；所以也是写在了Dockerfile中，并由container统一调用。
 - /cib/scripts/nginx/stop.sh  可以关闭nginx；container通过run.sh启动的nginx，执行stop.sh后container将停止
 - postunpack.sh 只在Dockerfile中使用，在应用安装后执行一些权限管理、目录建立、文件清理等工作，应当可重复执行，且几乎可以在任意步骤中执行；由于nginx是编译的，所以改用了install.sh，所以postunpack.sh中的所有功能都不需要执行了，这个文件暂时保留，只是确实没什么作用了
 - install.sh 是 编译nginx的步骤
-- setup.sh 是启动前的一层拦截，目前的策略是：run.sh 和 start.sh都要调用下setup.sh
+- setup.sh 是启动前的一层拦截，目前的策略是：run.sh 和 start.sh都要调用下setup.sh，确保两种启动方式效果一致
 
 ### 参数问题 ###
 - UEMP_NAMESPACE 记录了命名空间的名称，在k8s编排文件中要把命名空间加进来
@@ -51,8 +51,40 @@ UEMP_NAMESPACE=xxxxx-uat-1
           k2=22
   ```
   - servername、ip约定使用方式就是直接读取文件，在nginx-env.sh的nginx_env_vars中做约定，当然了这些值也是可以直接使用环境变量方式来赋值的
+  - 如果没有ip文件，只有ip-uat文件时；ip-uat不会被读取
   - env.sh 和 env-uat.sh的执行，也是约定好的，约定的使用方式就是直接执行，在。。。。。中做约定；当然了，也可都通过环境变量方式传入到pod中
   - 当然了，也可以直接在env.sh中实现profile的判定，所以要依赖环境变量UEMP_PROFILE：类似一个application.yaml中通过“---”来区分多个环境
+  - *_FILE 是通过环境变量方式传入的，指向的是一个文件名称，请特别注意！
 
 ### mount文件的问题 ###
 - 场景：在pod外修改nginx.conf，然后pod要mount这个配置文件；这个就相当于是下发时，只更新nginx.conf，镜像不更新；或者极端情况下，需要以运维流程修改配置文件。
+
+### shell解释 ###
+```shell
+${var}	            取变量原值，与$var一样
+${var:=word}	      如果var为空或者未设定，返回word，且var=word
+${var:+word}	      如果var有值，返回word，var不变
+${var:-word}	      如果var为空或者未设定，返回word，var不变
+${var:?word}	      如果变量var为空或者未设定，返回word并退出shell，word没有值则输出：parameter null or not set，用于检测var是否被正常赋值
+${var:num}	        返回var中第num个字符到末尾的所有字符，正从左往右，负从右往左，有空格：${var: -2}，没有空格：${var:1-3}或${var:(-2)}
+${var:num1:num2}	  从var的第num1个位置开始，提取长度为num2的子串。num1是位置，num2是长度
+${var/word1/word2}	将var中第一个匹配到的word1替换为word2
+${var//word1/word2}	将var中所有word1替换为word2
+${!var}             取变量时变量名从var中动态得到，而不是直接的字面量var。var可以是其它合法的变量名，如${!aaa}、${!bbb}
+
+# 字符截取
+file=/dir1/dir2/dir3/my.file.txt
+可以用${ }分别替换得到不同的值：
+${file#*/}          删掉第一个 / 及其左边的字符串：dir1/dir2/dir3/my.file.txt
+${file##*/}         删掉最后一个 /  及其左边的字符串：my.file.txt
+${file#*.}          删掉第一个 .  及其左边的字符串：file.txt
+${file##*.}         删掉最后一个 .  及其左边的字符串：txt
+${file%/*}          删掉最后一个  /  及其右边的字符串：/dir1/dir2/dir3
+${file%%/*}         删掉第一个 /  及其右边的字符串：(空值)
+${file%.*}          删掉最后一个  .  及其右边的字符串：/dir1/dir2/dir3/my.file
+${file%%.*}         删掉第一个  .   及其右边的字符串：/dir1/dir2/dir3/my
+记忆的方法为：
+# 是 去掉左边（键盘上#在 $ 的左边）
+%是去掉右边（键盘上% 在$ 的右边）
+单一符号是最小匹配；两个符号是最大匹配
+```

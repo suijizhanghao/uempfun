@@ -23,7 +23,7 @@ trap "nginx_stop" EXIT  # 收到EXIT信号量后，需要执行的命令，即�
 
 # Ensure NGINX daemon user exists when running as 'root'
 # 还是最好定好具体是哪个用户执行
-am_i_root && ensure_user_exists "$CIB_USER" --group "$CIB_GROUP"
+# am_i_root && ensure_user_exists "$CIB_USER" --group "$CIB_GROUP"
 
 # Run init scripts
 nginx_custom_init_scripts

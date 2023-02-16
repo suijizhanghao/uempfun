@@ -15,4 +15,7 @@ set -o pipefail
 . /cib/scripts/nginx-env.sh
 
 info "** Starting NGINX by Containers **"
+info "** Starting NGINX setup **"
+/cib/scripts/nginx/setup.sh
+info "** NGINX setup finished! **"
 exec "${NGINX_SBIN_DIR}/nginx" -c "$NGINX_CONF_FILE" -g "daemon off;"

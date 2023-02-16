@@ -609,7 +609,8 @@ nginx_update_app_configuration() {
 nginx_custom_init_scripts() {
     if [[ -n $(find "${NGINX_INITSCRIPTS_DIR}/" -type f -regex ".*\.sh") ]]; then
         info "Loading user's custom files from $NGINX_INITSCRIPTS_DIR ..."
-        local -r tmp_file="/tmp/filelist"
+        local -r tmp_file="${NGINX_INITSCRIPTS_DIR}/tmp/filelist.$(date +'%Y%m%d.%H%M%S')"
+        ensure_dir_exists "${NGINX_INITSCRIPTS_DIR}/tmp/"
         find "${NGINX_INITSCRIPTS_DIR}/" -type f -regex ".*\.sh" | sort >"$tmp_file"
         while read -r f; do
             case "$f" in
@@ -621,6 +622,16 @@ nginx_custom_init_scripts() {
                     debug "Sourcing $f"
                     . "$f"
                 fi
+                local f_profile="${f}.${UEMP_PROFILE}"
+                if [[ -f "${f_profile}" ]]; then
+                    if [[ -x "${f_profile}" ]]; then
+                    debug "Executing ${f_profile}"
+                    "${f_profile}"
+                    else
+                        debug "Sourcing ${f_profile}"
+                        . "${f_profile}"
+                    fi
+                fi
                 ;;
             *)
                 debug "Ignoring $f"
@@ -628,7 +639,7 @@ nginx_custom_init_scripts() {
             esac
         done <$tmp_file
         nginx_stop
-        rm -f "$tmp_file"
+        #rm -f "$tmp_file"
     else
         info "No custom scripts in $NGINX_INITSCRIPTS_DIR"
     fi

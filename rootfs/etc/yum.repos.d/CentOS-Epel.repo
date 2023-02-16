@@ -1,0 +1,7 @@
+[epel]
+name=EPEL for redhat/centos $releasever - $basearch
+failovermethod=priority
+gpgcheck=1
+gpgkey=http://mirrors.tencentyun.com/epel/RPM-GPG-KEY-EPEL-7
+enabled=1
+baseurl=http://mirrors.tencentyun.com/epel/$releasever/$basearch/

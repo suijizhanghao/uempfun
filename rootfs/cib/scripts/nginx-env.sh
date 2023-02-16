@@ -24,7 +24,7 @@ export UEMP_PROFILE
 
 # 全局约定值
 export CIB_ROOT_DIR="/cib"
-export CIB_VOLUME_DIR="/cib_volume"
+export CIB_VOLUME_DIR="${CIB_ROOT_DIR}/cib_volume"
 
 # Logging configuration
 export MODULE="${MODULE:-nginx}"
@@ -47,7 +47,7 @@ for env_var in "${nginx_env_vars[@]}"; do
     if [[ -n "${!file_env_var:-}" ]]; then
         if [[ -r "${!file_env_var:-}" ]]; then
             export "${env_var}=$(< "${!file_env_var}")"
-            file_env_var_profile_file="${!file_env_var}-${UEMP_PROFILE}"
+            file_env_var_profile_file="${!file_env_var}.${UEMP_PROFILE}"
             if [[ -r "${file_env_var_profile_file}" ]]; then
                 export "${env_var}=$(< "${file_env_var_profile_file}")"
             fi
@@ -64,14 +64,14 @@ export WEB_SERVER_TYPE="nginx"
 
 # Paths
 export NGINX_BASE_DIR="${CIB_ROOT_DIR}/nginx"
-# export NGINX_VOLUME_DIR="${CIB_VOLUME_DIR}/nginx"     # 不再使用了
+export NGINX_VOLUME_DIR="${CIB_VOLUME_DIR}/nginx"       # 目前考虑不在使用，此处只是占位一下，如果再启用，另当他论@2023年02月16日15:17:03
 export NGINX_SBIN_DIR="${NGINX_BASE_DIR}/sbin"          # 与默认路径相同
 export NGINX_CONF_DIR="${NGINX_BASE_DIR}/conf"          # 与默认路径相同
 export NGINX_HTDOCS_DIR="${NGINX_BASE_DIR}/html"        # 与默认路径相同
 export NGINX_TMP_DIR="${NGINX_BASE_DIR}/tmp"            # 需与nginx.conf中的5个temp_path保持一致
 export NGINX_LOGS_DIR="${NGINX_BASE_DIR}/logs"
 export NGINX_SERVER_BLOCKS_DIR="${NGINX_CONF_DIR}/server_blocks"    # TODO 需要考虑删除掉
-export NGINX_INITSCRIPTS_DIR="/docker-entrypoint-initdb.d"
+export NGINX_INITSCRIPTS_DIR="${CIB_ROOT_DIR}/docker-entrypoint-initdb.d"
 export NGINX_CONF_FILE="${NGINX_CONF_DIR}/nginx.conf"   
 export NGINX_PID_FILE="${NGINX_TMP_DIR}/nginx.pid"      # 需与nginx.conf中的pid配置参数相同
 export PATH="${NGINX_SBIN_DIR}:${PATH}"

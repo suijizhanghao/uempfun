@@ -3,7 +3,8 @@ FROM centos:centos7.9.2009  AS build_base
 # 测试命令
 # docker rm -f t1; docker image rm -f cib-nginx:v0.1 ;
 # docker build --build-arg NGINX_VERSION=1.23.3 -t cib-nginx:v0.1  .;docker images
-# docker run -itd --name t1 cib-nginx:v0.1
+# docker run -itd --name t1 cib-nginx:v0.1  或者 docker run -itd --name t1 cib-nginx:v0.1 /bin/bash
+# docker logs t1
 # docker exec -it t1 /bin/bash
 
 ARG NGINX_VERSION
@@ -17,7 +18,7 @@ RUN  chmod -R 775 /cib && /cib/scripts/nginx/install.sh ${NGINX_VERSION}
 # RUN /cib/scripts/nginx/postunpack.sh  # postunpack.sh的内容已经都删除完毕了，暂时不需要这个了
 
 ###################################
-FROM centos:centos7.9.2009 
+FROM centos:centos7.9.2009
 
 ARG NGINX_VERSION
 

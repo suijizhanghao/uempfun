@@ -1,12 +1,13 @@
 FROM centos:centos7.9.2009  AS build_base
 
 # 测试命令
-# docker rm -f t1; docker image rm cib-nginx:v0.1 ;
+# docker rm -f t1; docker image rm -f cib-nginx:v0.1 ;
 # docker build --build-arg NGINX_VERSION=1.23.3 -t cib-nginx:v0.1  .;docker images
 # docker run -itd --name t1 cib-nginx:v0.1
 # docker exec -it t1 /bin/bash
 
 ARG NGINX_VERSION
+RUN rm /etc/yum.repos.d/*
 COPY rootfs /
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

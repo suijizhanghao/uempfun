@@ -14,7 +14,7 @@
 
 ### 参数问题 ###
 - UEMP_NAMESPACE 记录了命名空间的名称，在k8s编排文件中要把命名空间加进来
-- UEMP_PROFILE 为当前被激活的profile值；如果没有赋值，则从UEMP_NAMESPACE中截取，取第一个'-'之后的所有字符，不区分大小写；如果取不到则默认为生产，空 也是生产
+- UEMP_PROFILE 为当前被激活的profile值；如果没有赋值，则从UEMP_NAMESPACE中截取，取第一个'-'之后的所有字符，目前是区分大小写；如果取不到则默认为生产，空 也是生产
 
 ```
 UEMP_NAMESPACE=xxxxx-uat-1

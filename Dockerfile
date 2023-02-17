@@ -43,10 +43,11 @@ COPY --from=build_base /cib .
 RUN groupadd -g 1004 cib \
     && useradd -u 1004 -d /home/cib -m -s /bin/bash -g cib cib \
     && chown -R cib:cib /cib /home/cib \
-    && chmod -R 775 /cib \
-    && chmod 775 /home/cib \
-    && groupadd -g 1002 cxwh && useradd -u 1002 -d /home/cxwh -m -s /bin/bash -g cxwh cxwh \
-    && chmod -R cxwh:cxwh /home/cxwh && chmod -R 775 /home/cxwh
+    && chmod -R 775 /home/cib /cib \
+    && groupadd -g 1002 cxwh \
+    && useradd -u 1002 -d /home/cxwh -m -s /bin/bash -g cxwh cxwh \
+    && chown -R cxwh:cxwh /home/cxwh \
+    && chmod -R 775 /home/cxwh
 # RUN ln -sf /dev/stdout /cib/nginx/logs/access.log
 # RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
 

@@ -33,7 +33,9 @@ ENV HOME="/home/cib" \
     OS_NAME="linux" \
     APP_VERSION="${NGINX_VERSION}" \
     CIB_APP_NAME="nginx" \
-    PATH="/cib/common/bin:/cib/scripts/bin:/cib/scripts/nginx/bin:/cib/nginx/sbin:$PATH"
+    PATH="/cib/common/bin:/cib/scripts/bin:/cib/scripts/nginx/bin:/cib/nginx/sbin:$PATH" \
+    LANG="en_US.utf8" \
+    LANG_ALL="en_US.utf8"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -48,6 +50,9 @@ RUN groupadd -g 1004 cib \
     && useradd -u 1002 -d /home/cxwh -m -s /bin/bash -g cxwh cxwh \
     && chown -R cxwh:cxwh /home/cxwh \
     && chmod -R 775 /home/cxwh
+
+# RUN /cib/scripts/init_os.sh # TODO 未开发完毕
+
 # RUN ln -sf /dev/stdout /cib/nginx/logs/access.log
 # RUN ln -sf /dev/stderr /cib/nginx/logs/error.log
 

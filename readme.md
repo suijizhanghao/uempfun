@@ -15,6 +15,8 @@
 - nginx_env_vars 中的参数，可先读取 vars_FILE环境变量标记的文件的值，再读取文件"${vars_File}.uat"的值
 - 通过编排文件传到pod中的环境变量可以是：UEMP_NAMESPACE、 UEMP_PROFILE、 nginx_env_vars数组中的各个参数的文件路径变量，当然了其他的export的内容也都可以传入
 - NGINX_INITSCRIPTS_DIR中存放的是自定义的一些shell，执行逻辑： 执行 x.sh，再执行x.sh.${UEMP_PROFILE}，且只有x.sh存在的情况下才会执行profile的shell
+- NGINX_INITSCRIPTS_DIR中的shell执行分为直接执行与source执行，那么参考init.d的方式：E01xxx.sh为source执行,E指的的是environment ；R01xxx.sh为直接bash执行，R指的是run;切记，为bash，不是sh
+- 结论：NGINX_INITSCRIPTS_DIR的自然字母顺序，就是所有sh要执行的顺序，Exx.sh通过source执行，Rxx.sh通过run执行
 
 ### 参数问题 ###
 - UEMP_NAMESPACE 记录了命名空间的名称，在k8s编排文件中要把命名空间加进来

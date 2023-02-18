@@ -611,25 +611,26 @@ nginx_custom_init_scripts() {
         info "Loading user's custom files from $NGINX_INITSCRIPTS_DIR ..."
         local -r tmp_file="${NGINX_INITSCRIPTS_DIR}/tmp/filelist.$(date +'%Y%m%d.%H%M%S')"
         ensure_dir_exists "${NGINX_INITSCRIPTS_DIR}/tmp/"
-        find "${NGINX_INITSCRIPTS_DIR}/" -type f -regex ".*\.sh" | sort >"$tmp_file"
+        find "${NGINX_INITSCRIPTS_DIR}/" -type f -regex '.*/E[^/]*\.sh' | sort >"$tmp_file"
+        find "${NGINX_INITSCRIPTS_DIR}/" -type f -regex '.*/R[^/]*\.sh' | sort >>"$tmp_file"
         while read -r f; do
             case "$f" in
             *.sh)
-                if [[ -x "$f" ]]; then
-                    debug "Executing $f"
-                    "$f"
-                else
+                if [[ "$f" =~ ^E ]]; then
                     debug "Sourcing $f"
                     . "$f"
+                else
+                    debug "Executing $f"
+                    bash "$f"
                 fi
                 local f_profile="${f}.${UEMP_PROFILE}"
                 if [[ -f "${f_profile}" ]]; then
-                    if [[ -x "${f_profile}" ]]; then
-                    debug "Executing ${f_profile}"
-                    "${f_profile}"
+                    if [[ "${f_profile}" =~ ^E ]]; then
+                    debug "Sourcing ${f_profile}"
+                    . "${f_profile}"
                     else
-                        debug "Sourcing ${f_profile}"
-                        . "${f_profile}"
+                        debug "Executing ${f_profile}"
+                        bash "${f_profile}"
                     fi
                 fi
                 ;;

@@ -8,12 +8,12 @@ server {
 
     {{server_name_configuration}}
 
-    ssl_certificate      cib/certs/server.crt;
-    ssl_certificate_key  cib/certs/server.key;
+    ssl_certificate      conf.d/certs/server.crt;
+    ssl_certificate_key  conf.d/certs/server.key;
 
     {{acl_configuration}}
 
     {{additional_configuration}}
 
-    include  "/cib/nginx/conf/cib/*.conf";
+    include  "/cib/nginx/conf/conf.d/cib/*.conf";
 }

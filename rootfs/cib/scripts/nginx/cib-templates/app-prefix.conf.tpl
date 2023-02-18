@@ -3,7 +3,7 @@ location ^~ {{location}} {
 
     {{acl_configuration}}
 
-    include "/cib/nginx/conf/cib/protect-hidden-files.conf";
+    include "/cib/nginx/conf/conf.d/cib/protect-hidden-files.conf";
 }
 
 {{additional_configuration}}

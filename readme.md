@@ -16,6 +16,8 @@
 - 特殊说明：当前大体可用，后续在使用过程中需要做进一步细节修订
   
 ### 脚本功能说明  ###
+
+
 - /cib/scripts/nginx/start.sh   后台启动nginx，主要用于：登录容器后，手动执行nginx的启动
 - /cib/scripts/nginx/run.sh     前台启动nginx；由Dockerfile的entrypoint间接调用
 - /cib/scripts/nginx/stop.sh    关闭nginx；container通过run.sh启动的nginx，执行stop.sh后container将停止

@@ -14,6 +14,7 @@ docker run -itd -p 8080:8080 -p 8443:8443 -p 9100:9100 --name t1 -v /xxx/nginx.c
 
 docker logs t1
 docker exec -it t1 /bin/bash
+docker exec -it --user root t1 /bin/bash
 ```
 
 - 以当前镜像为基础，做下一层镜像

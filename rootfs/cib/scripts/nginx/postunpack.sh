@@ -60,8 +60,8 @@ set -o pipefail
 
 # Users can mount their certificates at /certs
 # 不在处理cert的问题，k8s下无需这么考虑问题了
-# mv "${NGINX_CONF_DIR}/cib/certs" /certs
-# ln -sf /certs "${NGINX_CONF_DIR}/cib/certs"
+# mv "${NGINX_CONF_DIR}/certs" /certs
+# ln -sf /certs "${NGINX_CONF_DIR}/certs"
 
 # ln -sf "/dev/stdout" "${NGINX_LOGS_DIR}/access.log"
 # ln -sf "/dev/stderr" "${NGINX_LOGS_DIR}/error.log"

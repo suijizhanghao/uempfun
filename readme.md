@@ -1,69 +1,60 @@
 # readme #
 
 ## 说明 ##
-- rootfs就是根目录
-- NGINX_VOLUME_DIR 不再使用了，k8s环境下可以直接mount文件，该目录存在意义不是很大了
+
+### 环境变量 ###
+- UEMP_NAMESPACE k8s的命名空间，以环境变量方式传入
+- UEMP_PROFILE   为当前被激活的profile值；取值逻辑：
+  - 如果环境变量中已赋值，则使用该之；并结束后续逻辑；
+  - 如果环境变量未赋值，则截取：UEMP_NAMESPACE中第一个'-'之后的所有字符，区分大小写；并结束后续逻辑；
+  - 如果取不到则默认为空；默认为空则表示为生产环境。
+
+
+- rootfs就是根目录，直接复制到虚拟机或者容器中的根目录即可
+- NGINX_VOLUME_DIR 不再使用了，k8s环境下可以直接mount文件，该目录存在意义不是很大了；但是可能依然会有一些什么作用，目前看，暂时不做删除
 - nginx.conf 、nginx.${UEMP_PROFILE}.conf，应该放在同一级目录，同时请注意命名规则
 - 特殊说明：当前大体可用，后续在使用过程中需要做进一步细节修订
-### 脚本功能说明  ###
-- /cib/scripts/nginx/start.sh 登录到服务器后，执行该脚本，可以在后台启动nginx
-- /cib/scripts/nginx/run.sh   该脚本，会在前台启动nginx；所以也是写在了Dockerfile中，并由container统一调用。
-- /cib/scripts/nginx/stop.sh  可以关闭nginx；container通过run.sh启动的nginx，执行stop.sh后container将停止
-- postunpack.sh 只在Dockerfile中使用，在应用安装后执行一些权限管理、目录建立、文件清理等工作，应当可重复执行，且几乎可以在任意步骤中执行；由于nginx是编译的，所以改用了install.sh，所以postunpack.sh中的所有功能都不需要执行了，这个文件暂时保留，只是确实没什么作用了
-- install.sh 是 编译nginx的步骤
-- setup.sh 是启动前的一层拦截，目前的策略是：run.sh 和 start.sh都要调用下setup.sh，确保两种启动方式效果一致
-- nginx_env_vars 中的参数，可先读取 vars_FILE环境变量标记的文件的值，再读取文件"${vars_File}.uat"的值
-- 通过编排文件传到pod中的环境变量可以是：UEMP_NAMESPACE、 UEMP_PROFILE、 nginx_env_vars数组中的各个参数的文件路径变量，当然了其他的export的内容也都可以传入
-- NGINX_INITSCRIPTS_DIR中存放的是自定义的一些shell，执行逻辑： 执行 x.sh，再执行x.sh.${UEMP_PROFILE}，且只有x.sh存在的情况下才会执行profile的shell
-- NGINX_INITSCRIPTS_DIR中的shell执行分为直接执行与source执行，那么参考init.d的方式：E01xxx.sh为source执行,E指的的是environment ；R01xxx.sh为直接bash执行，R指的是run;切记，为bash，不是sh
-- 结论：NGINX_INITSCRIPTS_DIR的自然字母顺序，就是所有sh要执行的顺序，Exx.sh通过source执行，Rxx.sh通过run执行
-
-### 参数问题 ###
-- UEMP_NAMESPACE 记录了命名空间的名称，在k8s编排文件中要把命名空间加进来
-- UEMP_PROFILE 为当前被激活的profile值；如果没有赋值，则从UEMP_NAMESPACE中截取，取第一个'-'之后的所有字符，目前是区分大小写；如果取不到则默认为生产，空 也是生产
-
-```
-UEMP_NAMESPACE=xxxxx-uat-1
-若UEMP_PROFILE没有赋值，则UEMP_PROFILE值为uat-1
-```
-
-- k8s可以把变量绑定到文件中，那么读取文件时，也将增加profile的问题，这个的话，直接参考application.yaml的处理方式
-- 文件命名方式，也一并按照springboot application.yaml方式来处理，例如： application-uat.yaml
-- 变量从k8s传入pod有3中方式：1. 通过环境变量方式写入(环境变量可以从编排文件、configMap中单个或批量获得)；2. 把configMap绑定到pod的目录中。3. 直接把文件放到pod的目录中：
-  - 对于2和3实质上是差不多的，但是又有些不同
-  - 对于方式2，可以把多个环境的值，放到一个configMap中，此时就可以模拟实现application.yaml了，更多是针对单个key
-  ```
-  方式1：在uat环境下，则读取ip-uat文件；任意环境下都读取 servername
-  servername=nginx
-  ip: 1.1.1.1
-  ip-uat: 2.2.2.2
   
-  方式2：
-  生产一个configMap：
+### 脚本功能说明  ###
+- /cib/scripts/nginx/start.sh   后台启动nginx，主要用于：登录容器后，手动执行nginx的启动
+- /cib/scripts/nginx/run.sh     前台启动nginx；由Dockerfile的entrypoint间接调用
+- /cib/scripts/nginx/stop.sh    关闭nginx；container通过run.sh启动的nginx，执行stop.sh后container将停止
+- /cib/scripts/nginx/install.sh 编译nginx的步骤
+- /cib/scripts/nginx/setup.sh   run.sh、start.sh启动nginx前都会调用setup.sh
+- nginx_env_vars  约定的文件类型的环境变量，nginx_env_vars数组的值在nginx-env.sh中做约定，并固化在脚本中，执行逻辑为
+  - 对于某约定的参数 aVars，在启动容器时增加环境变量“aVars_FILE”，指向文件名；
+  - 若文件“${aVars_FILE}”存在，则读取文件“${aVars_FILE}”的内容，赋值给“aVars”
+  - 若文件“${aVars_FILE}”存在，且UEMP_PROFILE不为空，且文件"${aVars_FILE}.${UEMP_PROFILE}"存在，则读取该文件的内容，并覆盖赋值“aVars”；请注意，是覆盖赋值。
+- 目录 /cib/docker-entrypoint-initdb.d/ 中存放的是自定义的一些shell，执行逻辑为：
+  - 获取*.sh文件列表，并进行sort排序，然后依次执行后续步骤
+  - 若文件为Exxxx.sh，则执行：". Exxx.sh"
+  - 若UEMP_PROFILE不为空，且存在Exxx.sh.${UEMP_PROFILE}，则执行". Exxx.sh.${UEMP_PROFILE}"
+  - 若文件为Rxxx.sh(实际条件是“不是Exxx.sh”)，则执行："bash Rxxx.sh"
+  - 若UEMP_PROFILE不为空，且存在Rxxx.sh.${UEMP_PROFILE}，则执行"bash Rxxx.sh.${UEMP_PROFILE}"
+  - 注意：NGINX_INITSCRIPTS_DIR中的shell，分为 source执行 与 直接执行；为避免因LANG不同造成sort排序不同，避免对下划线、点的排序不同，建议命名规则为：[ER][0-9][0-9]xxx.sh；E-环境变量、source执行；R-直接执行
+- postunpack.sh   只在Dockerfile中使用，在应用安装后执行一些权限管理、目录建立、文件清理等工作，应当可重复执行，且几乎可以在任意步骤中执行；由于nginx是编译的，所以改用了install.sh，所以postunpack.sh中的所有功能都不需要执行了，这个文件暂时保留，只是确实没什么作用了
+
+### 目录结构与mount ###
+- /cib/nginx/
+
+### nginx_env_vars的考虑点 ###
+- k8s可以把变量绑定到文件中，那么读取文件时，也将增加profile的问题
+- 变量从k8s传入pod有3中方式：1. 通过环境变量方式写入(环境变量可以从编排文件、configMap中单个或批量获得)；2. 把configMap绑定到pod的文件中。3. 直接把文件放到pod的目录中；2和3实质上是差不多的
+- 为了实现profile，要么实在container中解决，要么是由上层分别调用多个profile的configMap文件，即：
+  - 方式1，参考SpringBoot的yaml文件赋值策略：
+    任意环境均读取文件${servername_FILE}对变量servername赋值
+    任意环境先读取文件${ip_FILE}对变量ip赋值
+    任意环境先读取文件${ip_FILE}.${UEMP_PROFILE}对变量ip再次覆盖赋值
+  - 方式2：
+  生产一个configMap文件：
    servername=nginx
    ip: 1.1.1.1
   
-  测试一个configMap
+  其他环境一个configMap
     servername=nginx
     ip: 2.2.2.2
-  ```
-  - 在pod侧，需要确认哪些文件只是k-v关系，哪些文件是shell脚本(即：里面有多个配置)，或者是其他的加载方式；也就是：对文件的加工处理方式应该不多，且需要约定要，关键在于要约定好。
-  ```
-  这个也是一个configMap并最终绑定到了文件，但是env.sh是要被“执行”
-  env.sh: k1=1
-          k2=2
-  env-uat.sh: 
-          k1=11
-          k2=22
-  ```
-  - servername、ip约定使用方式就是直接读取文件，在nginx-env.sh的nginx_env_vars中做约定，当然了这些值也是可以直接使用环境变量方式来赋值的
-  - 如果没有ip文件，只有ip-uat文件时；ip-uat不会被读取
-  - env.sh 和 env-uat.sh的执行，也是约定好的，约定的使用方式就是直接执行，在。。。。。中做约定；当然了，也可都通过环境变量方式传入到pod中
-  - 当然了，也可以直接在env.sh中实现profile的判定，所以要依赖环境变量UEMP_PROFILE：类似一个application.yaml中通过“---”来区分多个环境
-  - *_FILE 是通过环境变量方式传入的，指向的是一个文件名称，请特别注意！
-
-### mount文件的问题 ###
-- 场景：在pod外修改nginx.conf，然后pod要mount这个配置文件；这个就相当于是下发时，只更新nginx.conf，镜像不更新；或者极端情况下，需要以运维流程修改配置文件。
+  并由编排脚本的外层的脚本再次判定到底加载哪个configMap文件
+- /cib/docker-entrypoint-initdb.d/中的shell也是参考SpringBoot的yaml来处理profile问题；当然了，shell脚本内容部也可以直接根据UEMP_PROFILE来做内部判定，这样的话就类似于在application.yaml中使用“---”来区分多个环境
 
 ### shell解释 ###
 ```shell

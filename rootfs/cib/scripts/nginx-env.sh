@@ -47,11 +47,13 @@ for env_var in "${nginx_env_vars[@]}"; do
     if [[ -n "${!file_env_var:-}" ]]; then
         if [[ -r "${!file_env_var:-}" ]]; then
             export "${env_var}=$(< "${!file_env_var}")"
-            file_env_var_profile_file="${!file_env_var}.${UEMP_PROFILE}"
-            if [[ -r "${file_env_var_profile_file}" ]]; then
-                export "${env_var}=$(< "${file_env_var_profile_file}")"
+            if [[ -n "${UEMP_PROFILE}" ]];then
+                file_env_var_profile_file="${!file_env_var}.${UEMP_PROFILE}"
+                if [[ -r "${file_env_var_profile_file}" ]]; then
+                    export "${env_var}=$(< "${file_env_var_profile_file}")"
+                fi
+                unset file_env_var_profile_file
             fi
-            unset file_env_var_profile_file
             unset "${file_env_var}"
         else
             warn "Skipping export of '${env_var}'. '${!file_env_var:-}' is not readable."

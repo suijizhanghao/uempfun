@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "this is $0"
+echo "this is ${BASH_SOURCE[0]}"

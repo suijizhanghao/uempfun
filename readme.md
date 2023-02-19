@@ -2,6 +2,36 @@
 
 ## 说明 ##
 
+### 使用说明 ###
+- 镜像的build
+```shell
+docker rm -f t1; docker image rm -f cib-nginx:v0.1 ;
+docker build --build-arg NGINX_VERSION=1.23.3 -t cib-nginx:v0.1  .;docker images
+
+docker run -itd -p 8080:8080 -p 8443:8443 -p 9100:9100 --name t1 cib-nginx:v0.1             # 调动enterpoint启动nginx
+docker run -itd -p 8080:8080 -p 8443:8443 -p 9100:9100 --name t1 cib-nginx:v0.1 /bin/bash   # 需要登录服务器后，执行start.sh
+docker run -itd -p 8080:8080 -p 8443:8443 -p 9100:9100 --name t1 -v /xxx/nginx.conf:/cib/nginx/conf/nginx.conf cib-nginx:v0.1
+
+docker logs t1
+docker exec -it t1 /bin/bash
+```
+
+- 以当前镜像为基础，做下一层镜像
+```
+FROM cib-nginx:v0.1
+
+# 把临时文件清理掉
+RUN rm -rf /cib/nginx/conf/conf.d/certs/* \
+    && rm -rf /cib/nginx/conf/conf.d/cib/* \
+    && rm -rf /cib/nginx/conf/conf.d/server_blocks/* \
+    && rm -rf /cib/nginx/conf/nginx.conf \
+    && rm -rf /cib/nginx/html/* \
+    && rm -rf /cib/docker-entrypoint-initdb.d/*
+
+# 复制自己的文件到目标目录
+RUN cp xxxx/nginx.conf /cib/nginx/conf/
+```
+
 ### 环境变量 ###
 - UEMP_NAMESPACE k8s的命名空间，以环境变量方式传入
 - UEMP_PROFILE   为当前被激活的profile值；取值逻辑：
@@ -28,14 +58,6 @@
   - 注意：NGINX_INITSCRIPTS_DIR中的shell，分为 source执行 与 直接执行；为避免因LANG不同造成sort排序不同，避免对下划线、点的排序不同，建议命名规则为：[ER][0-9][0-9]xxx.sh；E-环境变量、source执行；R-直接执行
 - postunpack.sh   只在Dockerfile中使用，在应用安装后执行一些权限管理、目录建立、文件清理等工作，应当可重复执行，且几乎可以在任意步骤中执行；由于nginx是编译的，所以改用了install.sh，所以postunpack.sh中的所有功能都不需要执行了，这个文件暂时保留，只是确实没什么作用了
 
-### 目录结构与mount ###
-- /cib/nginx/
-
-- rootfs就是根目录，直接复制到虚拟机或者容器中的根目录即可
-- NGINX_VOLUME_DIR 不再使用了，k8s环境下可以直接mount文件，该目录存在意义不是很大了；但是可能依然会有一些什么作用，目前看，暂时不做删除
-- nginx.conf 、nginx.${UEMP_PROFILE}.conf，应该放在同一级目录，同时请注意命名规则
-- 特殊说明：当前大体可用，后续在使用过程中需要做进一步细节修订
-
 
 ### nginx_env_vars的考虑点 ###
 - k8s可以把变量绑定到文件中，那么读取文件时，也将增加profile的问题
@@ -55,6 +77,55 @@
     ip: 2.2.2.2
   并由编排脚本的外层的脚本再次判定到底加载哪个configMap文件
 - /cib/docker-entrypoint-initdb.d/中的shell也是参考SpringBoot的yaml来处理profile问题；当然了，shell脚本内容部也可以直接根据UEMP_PROFILE来做内部判定，这样的话就类似于在application.yaml中使用“---”来区分多个环境
+
+
+### 目录结构与mount ###
+- 该目录结构 与 nginx-env.sh中的值是对应的，请保持同步修改
+```shell
+/cib
+|-- common
+|   `-- bin                     # 存放与服务无关的公共工具
+|       `-- install_packages    # yum安装工具
+|-- docker-entrypoint-initdb.d  # 存放自定义的shell
+|   |-- E01.sh        # E开头文件，执行方式为“. E01.sh”
+|   |-- E01.sh.sit    # E01.sh存在时，且UEMP_PROFILE为sit时执行，执行方式为“. E01.sh.sit”
+|   |-- R01.sh        # R开头文件，执行方式为“bash R01.sh”
+|   |-- R01.sh.sit    # R01.sh存在时，且UEMP_PROFILE为sit时执行，执行方式为“bash R01.sh.sit”
+|   `-- tmp           # 历史文件夹
+|       `-- filelist.yyyymmdd.hhmmss  # /cib/docker-entrypoint-initdb.d/*.sh文件进行sort排序
+|-- nginx
+|   |-- conf
+|   |   |-- conf.d                # 该目录被创建，使用者可以直接mount该目录
+|   |   |   |-- certs             # 存放证书文件，使用者可以直接mount该目录
+|   |   |   |   |-- server.crt
+|   |   |   |   `-- server.key
+|   |   |   |-- cib               # 在默认nginx.conf文件的9100端口的server中被include
+|   |   |   |   `-- protect-hidden-files.conf
+|   |   |   `-- server_blocks     # 被nginx.conf直接include引入，里面可以为独立的server块
+|   |   |       |-- http_8080.conf        # 独立的server块
+|   |   |       `-- https_8443.conf.demo  # 独立的server块
+|   |   |-- nginx.conf            # 默认的nginx.conf文件
+|   |   |-- nginx.${UEMP_PROFILE}.conf    # 在UEMP_PROFILE被赋值时，使用该配置文件
+
+|   |-- html              # 静态资源文件
+|   |   |-- 50x.html
+|   |   `-- index.html
+|   |-- logs              # 日志目录
+|   |   |-- access.log
+|   |   `-- error.log
+|   |-- sbin
+|   |   `-- nginx
+|   `-- tmp
+|       |-- client_body
+|       |-- fastcgi
+|       |-- nginx.pid     # pid文件位置；pid文件要保留在容器中
+|       |-- proxy
+|       |-- scgi
+|       `-- uwsgi
+`-- scripts               # 各种脚本
+```
+- 本脚本中的rootfs对应虚拟机或者容器中的根目录
+- NGINX_VOLUME_DIR 不再使用了，k8s环境下可以直接mount文件，该目录存在意义不是很大了；但是可能依然会有一些什么作用，目前看，暂时不做删除
 
 ### shell解释 ###
 ```shell

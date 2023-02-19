@@ -3,8 +3,8 @@ location ^~ {{location}} {
 
     {{acl_configuration}}
 
-    include "/cib/nginx/conf/cib/protect-hidden-files.conf";
-    include "/cib/nginx/conf/cib/php-fpm.conf";
+    include "/cib/nginx/conf/conf.d/cib/protect-hidden-files.conf";
+    include "/cib/nginx/conf/conf.d/cib/php-fpm.conf";
 }
 
 {{additional_configuration}}

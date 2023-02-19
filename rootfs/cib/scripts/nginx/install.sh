@@ -16,7 +16,7 @@ set -o pipefail
 # shellcheck disable=SC1091
 
 # Ensure non-root user has write permissions on a set of directories
-for dir in "$NGINX_CONF_DIR" "$NGINX_INITSCRIPTS_DIR" "$NGINX_SERVER_BLOCKS_DIR" "${NGINX_CONF_DIR}/cib" "$NGINX_LOGS_DIR" "$NGINX_TMP_DIR"; do
+for dir in "$NGINX_CONF_DIR" "$NGINX_CONF_DIR/certs" "$NGINX_INITSCRIPTS_DIR" "$NGINX_SERVER_BLOCKS_DIR" "${NGINX_CONF_DIR}/cib" "$NGINX_LOGS_DIR" "$NGINX_TMP_DIR"; do
     ensure_dir_exists "$dir"
     chmod -R g+rwX "$dir"
 done
@@ -46,13 +46,13 @@ tar -zxf ${PCRE_SOURCE} -C ${tmp_install_path}
 set -o errexit
 
 
-cd ${NGINX_SOURCE//.tar.gz/}
-./configure --prefix=${NGINX_BASE_DIR}  --with-http_stub_status_module \
+cd "${NGINX_SOURCE//.tar.gz/}"
+./configure --prefix="${NGINX_BASE_DIR}"  --with-http_stub_status_module \
             --with-zlib=../${ZLIB_SOURCE//.tar.gz/} \
             --with-pcre=../${PCRE_SOURCE//.tar.gz/}
 make && make install
 
 info "nginx编译结束，将执行测试" 
 
-${NGINX_BASE_DIR}/sbin/nginx -t
+"${NGINX_BASE_DIR}"/sbin/nginx -t
 

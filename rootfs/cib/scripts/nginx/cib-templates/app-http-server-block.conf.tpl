@@ -12,5 +12,5 @@ server {
 
     {{additional_configuration}}
 
-    include  "/cib/nginx/conf/cib/*.conf";
+    include  "/cib/nginx/conf/conf.d/cib/*.conf";
 }

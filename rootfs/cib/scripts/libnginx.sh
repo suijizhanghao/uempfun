@@ -453,7 +453,7 @@ absolute_redirect off;"
     local template_name="app"
     [[ -n "$type" ]] && template_name="app-${type}"
     local template_dir="${CIB_ROOT_DIR}/scripts/nginx/cib-templates"
-    local prefix_file="${NGINX_CONF_DIR}/cib/${app}.conf"
+    local prefix_file="${NGINX_CONF_DIR}/conf.d/cib/${app}.conf"
     if is_file_writable "$prefix_file"; then
         # Create file with root group write privileges, so it can be modified in non-root containers
         [[ ! -f "$prefix_file" ]] && touch "$prefix_file" && chmod g+rw "$prefix_file"
@@ -616,7 +616,7 @@ nginx_custom_init_scripts() {
         while read -r f; do
             case "$f" in
             *.sh)
-                if [[ "`basename $f`" =~ ^E ]]; then
+                if [[ "$(basename "${f}")" =~ ^E ]]; then
                     debug "Environment shell, Sourcing $f"
                     . "$f"
                 else
@@ -625,7 +625,7 @@ nginx_custom_init_scripts() {
                 fi
                 local f_profile="${f}.${UEMP_PROFILE}"
                 if [[ -f "${f_profile}" ]]; then
-                    if [[ "`basename ${f_profile}`" =~ ^E ]]; then
+                    if [[ "$(basename "${f_profile}")" =~ ^E ]]; then
                     debug "Environment shell, Sourcing ${f_profile}"
                     . "${f_profile}"
                     else
@@ -638,7 +638,7 @@ nginx_custom_init_scripts() {
                 debug "Ignoring $f"
                 ;;
             esac
-        done <$tmp_file
+        done <"${tmp_file}"
         nginx_stop
         #rm -f "$tmp_file"
     else
